@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
@@ -22,6 +23,10 @@ class Registro(db.Model):
 
     def __repr__(self):
         return f"<Registro {self.id} - {self.nome}>"
+
+
+with app.app_context():
+    db.create_all()
 
 
 @app.route("/")
@@ -177,7 +182,5 @@ def init_db():
     return redirect(url_for("index"))
 
 
-import os
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
