@@ -1,15 +1,81 @@
-{% extends "base.html" %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Controle de Caixas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
 
-<div class="card">
-    <h2>Caixas</h2>
+    <h1>Controle de Caixas</h1>
 
-    {% for c in caixas %}
-        <div>
-            <strong>{{ c.codigo }}</strong> - {{ c.vendedor }}
-            <a href="{{ url_for('detalhe_caixa', id=c.id) }}">Ver</a>
-        </div>
-    {% endfor %}
-</div>
+    <!-- BUSCA -->
+    <form method="GET">
+        <input type="text" name="busca" placeholder="Buscar por código ou vendedor">
+        <button type="submit">🔍 Buscar</button>
+    </form>
 
-{% endblock %}
+    <!-- BOTÃO -->
+    <div style="margin: 15px 0;">
+        <a href="/nova_caixa">
+            <button>➕ Nova Caixa</button>
+        </a>
+    </div>
+
+    <!-- LISTA -->
+    {% if caixas %}
+        {% for caixa in caixas %}
+            <div class="caixa">
+
+                <div class="caixa-header">
+                    <h2>{{ caixa.codigo }}</h2>
+                    <p><strong>👤 Vendedor:</strong> {{ caixa.vendedor }}</p>
+                    <p><strong>📅 Data:</strong> {{ caixa.data }}</p>
+                    <p><strong>📊 Total de itens:</strong> {{ caixa.itens|length }}</p>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Cor</th>
+                            <th>Tamanho</th>
+                            <th>Recebidas</th>
+                            <th>Processadas</th>
+                            <th>Divergência</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in caixa.itens %}
+                        <tr class="{% if item.divergencia != 0 %}erro{% endif %}">
+                            
+                            <td>{{ item.codigo }}</td>
+                            <td>{{ item.descricao }}</td>
+                            <td>{{ item.cor }}</td>
+                            <td>{{ item.tamanho }}</td>
+                            <td>{{ item.recebidas }}</td>
+                            <td>{{ item.processadas }}</td>
+
+                            <td>
+                                {% if item.divergencia != 0 %}
+                                    ⚠️ {{ item.divergencia }}
+                                {% else %}
+                                    ✔️ OK
+                                {% endif %}
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>⚠️ Nenhuma caixa encontrada.</p>
+    {% endif %}
+
+</body>
+</html>
