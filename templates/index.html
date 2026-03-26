@@ -2,78 +2,81 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Dados - Hackathon</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f8f9fa; padding: 20px; }
-        .status-badge { font-weight: bold; padding: 5px 10px; border-radius: 20px; }
-    </style>
+    <title>Controle de Caixas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<div class="container">
-    <h2 class="mb-4 text-center">📊 Monitoramento da Planilha</h2>
+    <h1>Controle de Caixas</h1>
 
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label for="filtroCategoria" class="form-label">Filtrar por Categoria:</label>
-            <select id="filtroCategoria" class="form-select" onchange="filtrarTabela()">
-                <option value="todos">Todas as Categorias</option>
-                <option value="Hardware">Hardware</option>
-                <option value="Software">Software</option>
-            </select>
-        </div>
+    <!-- BUSCA -->
+    <form method="GET">
+        <input type="text" name="busca" placeholder="Buscar por código ou vendedor">
+        <button type="submit">🔍 Buscar</button>
+    </form>
+    
+
+    <!-- BOTÃO -->
+    <div style="margin: 15px 0;">
+        <a href="/nova_caixa">
+            <button>➕ Nova Caixa</button>
+        </a>
     </div>
 
-    <div class="card shadow">
-        <div class="card-body">
-            <table class="table table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Nome/Item</th>
-                        <th>Categoria</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="corpoTabela">
-                    {% for item in lista_dados %}
-                    <tr class="linha-dado" data-categoria="{{ item['Categoria'] }}">
-                        <td>{{ item['Nome'] or item['Item'] }}</td>
-                        <td><span class="badge bg-secondary">{{ item['Categoria'] }}</span></td>
-                        <td>
-                            {% if item['Status'] == 'Concluído' or item['Status'] == 'OK' %}
-                                <span class="badge bg-success text-white">Concluído</span>
-                            {% elif item['Status'] == 'Pendente' or item['Status'] == 'Em andamento' %}
-                                <span class="badge bg-warning text-dark">Pendente</span>
-                            {% else %}
-                                <span class="badge bg-info">{{ item['Status'] }}</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+    <!-- LISTA -->
+    {% if caixas %}
+        {% for caixa in caixas %}
+            <div class="caixa">
 
-<script>
-function filtrarTabela() {
-    let select = document.getElementById("filtroCategoria");
-    let filtro = select.value;
-    let linhas = document.querySelectorAll(".linha-dado");
+                <div class="caixa-header">
+                    <h2>{{ caixa.codigo }}</h2>
+                    <p><strong>👤 Vendedor:</strong> {{ caixa.vendedor }}</p>
+                    <p><strong>📅 Data:</strong> {{ caixa.data }}</p>
+                    <p><strong>📊 Total de itens:</strong> {{ caixa.itens|length }}</p>
+                </div>
 
-    linhas.forEach(linha => {
-        let catLinha = linha.getAttribute("data-categoria");
-        if (filtro === "todos" || catLinha === filtro) {
-            linha.style.display = "";
-        } else {
-            linha.style.display = "none";
-        }
-    });
-}
-</script>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Cor</th>
+                            <th>Tamanho</th>
+                            <th>Recebidas</th>
+                            <th>Processadas</th>
+                            <th>Divergência</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in caixa.itens %}
+                        <tr class="{% if item.divergencia != 0 %}erro{% endif %}">
+                            
+                            <td>{{ item.codigo }}</td>
+                            <td>{{ item.descricao }}</td>
+                            <td>{{ item.cor }}</td>
+                            <td>{{ item.tamanho }}</td>
+                            <td>{{ item.recebidas }}</td>
+                            <td>{{ item.processadas }}</td>
+
+                            <td>
+                                {% if item.divergencia != 0 %}
+                                    ⚠️ {{ item.divergencia }}
+                                {% else %}
+                                    ✔️ OK
+                                {% endif %}
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>⚠️ Nenhuma caixa encontrada.</p>
+    {% endif %}
 
 </body>
 </html>
