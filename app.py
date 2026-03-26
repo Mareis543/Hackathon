@@ -3,19 +3,25 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# O link da sua planilha em formato CSV para facilitar a leitura
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1YxgYSwSwY6A6WjwmYr6LzDXEVxJCvL2e/export?format=csv"
+# Link direto para os dados da planilha em CSV
+URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1YxgYSwSwY6A6WjwmYr6LzDXEVxJCvL2e/export?format=csv&gid=1598712598"
 
 @app.route('/')
-def index():
-    # 1. Lê os dados da planilha
-    df = pd.read_csv(SHEET_URL)
+def exibir_planilha():
+    try:
+        # Lê a planilha usando o pandas
+        df = pd.read_csv(URL_PLANILHA)
+        
+        # Limpa nomes de colunas (remove espaços extras)
+        df.columns = df.columns.str.strip()
+        
+        # Converte para uma lista de dicionários para o HTML ler fácil
+        dados = df.to_dict(orient='records')
+        
+        return render_template('index.html', lista_dados=dados)
     
-    # 2. Converte para um formato que o HTML entende (lista de dicionários)
-    dados_tabela = df.to_dict(orient='records')
-    
-    # 3. Envia para o HTML
-    return render_template('index.html', dados=dados_tabela)
+    except Exception as e:
+        return f"Erro ao ler a planilha: {e}"
 
 if __name__ == '__main__':
     app.run(debug=True)
